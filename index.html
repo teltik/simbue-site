@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Simbue · Cellular API</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* VOICE: confident infrastructure company, plain words, developer credible
+   IDEA: a live carrier line; the site behaves like the Simbue console itself
+   PICTURE: a live call card where Guardian hears a scam and ends it, beside real API code
+   COLOUR and TYPE: Simbue brand ink #14122b, violet #5b4ce0, lavender #b9b0ff, mint #6fe0bf; Inter + JetBrains Mono
+   LAYOUT: dark brand hero band, light product bands, dark Guardian band, pricing as its own view */
+:root{color-scheme:light;--bg:#ffffff;--alt:#f5f4fb;--ink:#15132a;--mute:#5d5a75;--line:#e3e1ef;--card:#ffffff;--v:#5b4ce0;--v2:#4a3cc9;--lav:#b9b0ff;--mint:#6fe0bf;--deep:#14122b;--red:#ff6b6b}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:clip}
+a{color:var(--v2)}
+.band{padding:clamp(40px,6vw,96px) max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+pre,.scroll{overflow-x:auto}code{overflow-wrap:anywhere}html{scroll-padding-top:72px}
+h1,h2,h3{line-height:1.08;text-wrap:balance;margin:0 0 .45em}
+h1{font-size:clamp(36px,5.2vw,58px);letter-spacing:-.02em}
+h2{font-size:clamp(28px,3.6vw,42px);letter-spacing:-.015em}
+h3{font-size:19px;line-height:1.25}
+p{margin:0 0 1em;max-width:66ch}
+.lead{font-size:18px;color:var(--mute)}
+/* nav */
+nav.top{position:sticky;top:0;z-index:20;background:#14122bf2;backdrop-filter:blur(10px);color:#fff;border-bottom:1px solid #ffffff14}
+nav.top .wrap{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:10px max(5vw,16px)}
+.logo{font-weight:800;font-size:22px;color:#fff;text-decoration:none;margin-right:auto;letter-spacing:-.02em;display:flex;align-items:center;gap:9px}
+.logo b{color:var(--lav);font-weight:800}
+.logo i{width:28px;height:28px;border-radius:8px;background:#ffffff14;display:grid;place-items:center;font-style:normal}
+nav.top a.nl{color:#d8d5f0;text-decoration:none;padding:10px 12px;border-radius:8px;font-size:15px}
+nav.top a.nl:hover,nav.top a.nl[aria-current]{color:#fff;background:#ffffff12}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 20px;border-radius:10px;font-weight:600;font-size:15px;text-decoration:none;border:1px solid transparent;cursor:pointer;font-family:inherit}
+.btn.p{background:var(--v);color:#fff;box-shadow:0 8px 24px #5b4ce055}
+.btn.p:hover{background:#4a3cc9}
+.btn.g{border-color:#ffffff33;color:#fff}
+.btn.o{border-color:var(--line);color:var(--ink);background:var(--card)}
+.btn:focus-visible,a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--mint);outline-offset:2px}
+/* hero */
+.hero{background:radial-gradient(900px 500px at 85% 10%,#3a2f9a 0,transparent 60%),radial-gradient(700px 400px at 10% 100%,#123c3a 0,transparent 60%),var(--deep);color:#fff}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:clamp(28px,4vw,64px);align-items:center}
+.hero h1 span{color:var(--lav)}
+.hero .lead{color:#c9c6e4}
+.pill{display:inline-flex;gap:8px;align-items:center;font-size:14px;color:#cfcbef;background:#ffffff10;border:1px solid #ffffff1c;padding:6px 12px;border-radius:99px;margin-bottom:22px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--mint);box-shadow:0 0 0 4px #6fe0bf33}
+.cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.facts{display:flex;gap:28px;flex-wrap:wrap;margin-top:34px;color:#bdb9dc;font-size:14px}
+.facts b{display:block;color:#fff;font-size:22px}
+/* live call card */
+.stage{position:relative}
+.callcard{background:linear-gradient(180deg,#24214a,#1a1838);border:1px solid #ffffff1f;border-radius:20px;padding:22px;box-shadow:0 30px 80px #0008}
+.cc-h{display:flex;justify-content:space-between;font-size:13px;color:#b7b3d8;margin-bottom:16px}
+.live{color:#ff8a8a;font-weight:700}
+.who{display:flex;gap:14px;align-items:center;margin-bottom:16px}
+.av{width:44px;height:44px;border-radius:50%;background:#3a3570;display:grid;place-items:center;font-weight:700}
+.who b{display:block}.who small{color:#a9a5cc}
+.tx{display:grid;gap:8px;margin-bottom:18px;min-height:150px}
+.ln{background:#ffffff0d;border-radius:12px;padding:10px 12px;font-size:14px;color:#e6e4f7;opacity:0;transform:translateY(6px);transition:.5s}
+.ln.on{opacity:1;transform:none}
+.ln.bad{border-left:3px solid var(--red);background:#ff6b6b14}
+.risk{display:flex;justify-content:space-between;font-size:13px;color:#b7b3d8;margin-bottom:6px}
+.bar{height:8px;border-radius:9px;background:#ffffff14;overflow:hidden}
+.bar i{display:block;height:100%;width:4%;background:var(--mint);border-radius:9px;transition:width 1s,background 1s}
+.ended{margin-top:16px;display:flex;gap:10px;align-items:center;padding:12px 14px;border-radius:12px;background:#ff6b6b1f;color:#ffd0d0;font-size:14px;opacity:0;transition:.5s}
+.ended.on{opacity:1}
+.codechip{position:absolute;right:-10px;bottom:-34px;width:min(330px,80%);background:#0d0c1c;border:1px solid #ffffff1f;border-radius:14px;padding:12px 14px;font:12.5px/1.6 'JetBrains Mono',monospace;color:#cbc7ee;box-shadow:0 20px 50px #0009}
+.codechip .k{color:var(--mint)}.codechip .s{color:#ffcf8a}
+.sample{font-size:13px;color:#8f8bb5;margin-top:46px}
+/* grids */
+.alt{background:var(--alt)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:18px;margin-top:34px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px}
+.card p{color:var(--mute);margin:0;font-size:15.5px}
+.ic{width:42px;height:42px;border-radius:11px;background:#5b4ce01a;color:var(--v2);display:grid;place-items:center;margin-bottom:16px}
+.ic svg{width:22px;height:22px}
+/* compare */
+table{width:100%;border-collapse:collapse;font-size:15.5px}
+th,td{padding:14px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:14px;color:var(--mute);font-weight:600}
+td.y{color:var(--v2);font-weight:600}
+.tblwrap{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:6px 18px;margin-top:30px}
+/* ring order */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:26px 0 18px}
+.tab{min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 15px Inter,sans-serif;cursor:pointer}
+.tab[aria-selected=true]{background:var(--v);border-color:var(--v);color:#fff}
+.flow{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:26px;align-items:center}
+.lanes{display:grid;gap:12px}
+.node{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.nd{padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:var(--alt);font-weight:600;font-size:14.5px;white-space:nowrap}
+.nd.hot{background:#5b4ce0;color:#fff;border-color:#5b4ce0}
+.nd.dim{opacity:.35}
+.arr{color:var(--mute)}
+/* guardian */
+.dark{background:var(--deep);color:#fff}
+.dark .lead,.dark p{color:#c3bfe2}
+.gwrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:clamp(28px,4vw,60px);align-items:center}
+.dash{background:#1d1a3d;border:1px solid #ffffff1a;border-radius:18px;padding:24px}
+.big{font-size:clamp(60px,8vw,92px);font-weight:800;line-height:1;letter-spacing:-.03em}
+.stats{display:flex;gap:26px;flex-wrap:wrap;border-top:1px solid #ffffff1a;margin-top:18px;padding-top:16px}
+.stats b{display:block;font-size:22px}.stats small{color:#a9a5cc}
+.catch{margin-top:18px;border-left:3px solid var(--red);padding:4px 0 4px 14px;font-weight:600}
+.rules{display:grid;gap:10px;margin-top:22px}
+.rule{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#ffffff0a;border:1px solid #ffffff14;border-radius:12px;padding:12px 14px;font-size:14.5px}
+.mode{font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:99px;white-space:nowrap}
+.mode.e{background:#6fe0bf26;color:var(--mint)}.mode.l{background:#ffffff14;color:#cfcbef}
+ul.ck{list-style:none;padding:0;margin:18px 0 0;display:grid;gap:10px}
+ul.ck li{padding-left:28px;position:relative}
+ul.ck li::before{content:"";position:absolute;left:0;top:7px;width:14px;height:8px;border-left:2.5px solid var(--mint);border-bottom:2.5px solid var(--mint);transform:rotate(-45deg)}
+/* code */
+.code{white-space:pre;overflow-x:auto;background:#0d0c1c;color:#d9d6f5;border-radius:14px;padding:18px 20px;font:13.5px/1.7 'JetBrains Mono',monospace;border:1px solid #ffffff14;position:relative}
+.code .c{color:#7e7aa6}.code .k{color:var(--mint)}.code .s{color:#ffcf8a}
+.copy{position:absolute;top:10px;right:10px;min-height:34px;padding:0 12px;border-radius:8px;border:1px solid #ffffff26;background:#ffffff0d;color:#fff;font:600 13px Inter,sans-serif;cursor:pointer}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:start}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{font-size:13.5px;padding:6px 11px;border-radius:99px;background:var(--alt);border:1px solid var(--line)}
+/* pricing */
+.ptop{background:var(--deep);color:#fff;text-align:center}
+.ptop .lead{color:#c9c6e4;margin:0 auto}
+.tag{display:inline-block;font-size:12.5px;font-weight:700;color:var(--v2);background:#5b4ce01a;padding:3px 9px;border-radius:99px;margin-bottom:10px}
+td.n,th.n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.stack3{display:grid;gap:0;margin-top:-56px;position:relative}
+.tier{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:28px;align-items:start;background:var(--card);border:1px solid var(--line);padding:28px;position:relative}
+.t1{border-radius:18px 18px 0 0;box-shadow:0 12px 40px #14122b14}
+.t2{border-top:0}
+.t3{border-top:0;border-radius:0 0 18px 18px;background:linear-gradient(180deg,#5b4ce00d,#5b4ce01f);border-color:#5b4ce055}
+.tl{display:flex;gap:14px}
+.tl h3{margin-bottom:6px;font-size:21px}
+.tl p{color:var(--mute);font-size:15px;margin:0}
+.tn{flex:none;width:34px;height:34px;border-radius:50%;background:var(--v);color:#fff;display:grid;place-items:center;font-weight:700}
+.t1 .tn{background:var(--deep);box-shadow:inset 0 0 0 2px var(--lav)}
+.numcard{display:flex;gap:32px;flex-wrap:wrap;align-items:center}
+.numcard .amt{font-size:clamp(48px,6vw,64px)}
+ul.ck.dk{margin:0}ul.ck.dk li::before{border-color:var(--v2)}
+.amt{font-weight:800;letter-spacing:-.02em;font-size:clamp(34px,4vw,44px);line-height:1}
+.amt small{display:block;margin-top:8px;font-size:15px;font-weight:500;color:var(--mute);letter-spacing:0}
+.rt td{vertical-align:middle}.rt td::before{font-size:13px;font-weight:400;color:var(--mute)}.rt td.n{font-size:20px;font-weight:700}
+.aibox{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.ai1{background:var(--card);border:1px solid #5b4ce044;border-radius:14px;padding:20px}
+.ai1 p{color:var(--mute);font-size:14.5px;margin:12px 0 0}
+.ainote{grid-column:1/-1;margin:0;font-size:14px;color:var(--mute)}
+@media(max-width:900px){.tier{grid-template-columns:minmax(0,1fr);gap:18px}.aibox{grid-template-columns:minmax(0,1fr)}.stack3{margin-top:-40px}}
+.numgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:24px;align-items:center}
+.sims{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.sim{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--alt)}
+.sn{font-weight:600;color:var(--mute);font-size:14px}
+.sp{font-size:28px;font-weight:800;letter-spacing:-.02em;margin-top:4px;white-space:nowrap}.sp small{font-size:14px;font-weight:500;color:var(--mute)}
+.sim p{font-size:13.5px;color:var(--mute);margin:8px 0 0}
+.jump{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+.jump a{color:#e6e3fb;text-decoration:none;border:1px solid #ffffff2a;border-radius:99px;padding:8px 14px;font-size:14px;background:#ffffff0a}
+.jump a:hover{background:#ffffff1c}
+.fsec .fh{display:flex;gap:16px;align-items:center;margin-bottom:22px}
+.fsec .fh .ic{margin:0;flex:none}
+.fsec .fh h2{margin:0;font-size:clamp(24px,3vw,32px)}
+.fsec .fh p{color:var(--mute);margin:4px 0 0;font-size:15.5px}
+.flist{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.fi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:15px 17px}
+.fi b{display:block;font-size:15px;margin-bottom:3px}
+.fi span{color:var(--mute);font-size:14px;line-height:1.5}
+.alt .fi{background:var(--bg)}
+.fband{padding-block:clamp(32px,4vw,56px)}
+@media(max-width:1000px){.flist{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.flist{grid-template-columns:minmax(0,1fr);gap:0;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}.alt .flist{background:var(--bg)}.fi,.alt .fi{border:0;border-radius:0;border-top:1px solid var(--line);padding:11px 14px;background:transparent}.fi:first-child{border-top:0}.fi b{font-size:14.5px;margin:0}.fi span{font-size:13.5px}.fsec .fh{align-items:flex-start;gap:12px;margin-bottom:14px}.fsec .fh p{font-size:14.5px}}
+.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:26px}
+.shot{margin:0;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:zoom-in;display:flex;flex-direction:column;padding:0;text-align:left;font:inherit;color:inherit}
+.shot:first-child{grid-column:1/-1}
+.shot img{display:block;width:100%;height:auto;border-bottom:1px solid var(--line);background:#f4f3f0}
+.shot .cap{padding:16px 20px}
+.shot .cap b{display:block;font-size:17px;margin-bottom:4px}
+.shot .cap span{color:var(--mute);font-size:14.5px}
+.lb{position:fixed;inset:0;z-index:50;background:#0b0a18f2;display:flex;align-items:center;justify-content:center;padding:56px 64px}
+.lb[hidden]{display:none}
+.lb figure{margin:0;max-width:1500px;width:100%;text-align:center}
+.lb img{max-width:100%;max-height:calc(100vh - 160px);border-radius:10px;box-shadow:0 30px 80px #000a}
+.lb figcaption{color:#dcd9f3;margin-top:14px;font-size:15px}
+.lbx,.lbn{position:absolute;background:#ffffff14;border:1px solid #ffffff2a;color:#fff;border-radius:50%;width:48px;height:48px;font-size:26px;cursor:pointer;line-height:1}
+.lbx{top:14px;right:14px}.lbp{left:10px;top:50%}.lbnx{right:10px;top:50%}
+@media(max-width:900px){.numgrid{grid-template-columns:minmax(0,1fr)}.shot:first-child{grid-column:auto}}
+@media(max-width:600px){.jump{gap:6px}.jump a{font-size:13px;padding:7px 11px}.sims{grid-template-columns:minmax(0,1fr)}.lb{padding:56px 8px}.lbn{top:auto;bottom:14px}}
+.apimeta{display:flex;flex-wrap:wrap;gap:12px;margin:22px 0 18px}
+.apimeta div{background:var(--alt);border:1px solid var(--line);border-radius:12px;padding:10px 14px;display:flex;gap:10px;align-items:center;font-size:14px}
+.apimeta span{color:var(--mute);font-weight:600}
+.apimeta code{font:13.5px 'JetBrains Mono',monospace}
+.flowline{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:30px;font-size:14px}
+.flowline span{background:#5b4ce01a;color:var(--v2);font-weight:600;padding:7px 12px;border-radius:99px}
+.flowline i{font-style:normal;color:var(--mute)}
+.apigrid{display:grid;grid-template-columns:minmax(0,250px) minmax(0,1fr);gap:32px;align-items:start}
+.apinav{position:sticky;top:84px;display:grid;gap:4px}
+.apinav b{font-size:13px;color:var(--mute);margin:12px 0 4px}
+.apinav b:first-child{margin-top:0}
+.apinav a{display:flex;gap:8px;align-items:center;text-decoration:none;color:var(--ink);font-size:14px;padding:8px 10px;border-radius:8px;min-height:40px}
+.apinav a:hover{background:var(--alt)}
+.mth{font:700 11px 'JetBrains Mono',monospace;padding:3px 7px;border-radius:6px;background:#6fe0bf33;color:#0b7a5c;flex:none}
+.ep{border:1px solid var(--line);border-radius:16px;background:var(--card);padding:24px;margin-bottom:22px;scroll-margin-top:84px}
+.eph{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.eph code{font:600 15px 'JetBrains Mono',monospace;overflow-wrap:anywhere}
+.ep h3{font-size:18px;margin:0 0 6px}
+.ep>p{color:var(--mute);font-size:15px}
+.ep h4{font-size:13.5px;color:var(--mute);margin:18px 0 8px;font-weight:600}
+.ptab{font-size:14px}.ptab td{padding:10px 10px}.ptab td:first-child{white-space:nowrap}
+.ptab code{font:13px 'JetBrains Mono',monospace}
+.req{font-size:11.5px;font-weight:700;color:#c2410c;margin-left:6px}
+.ty{font:12.5px 'JetBrains Mono',monospace;color:var(--mute)}
+.codes{display:flex;flex-wrap:wrap;gap:8px}
+.cd{font-size:13px;padding:5px 10px;border-radius:8px;background:var(--alt);border:1px solid var(--line)}
+.cd b{font-family:'JetBrains Mono',monospace;margin-right:6px}
+.ep .code{margin-top:6px;font-size:12.5px}
+@media(max-width:900px){.apigrid{grid-template-columns:minmax(0,1fr)}.apinav{position:static;display:flex;flex-wrap:wrap;gap:6px}.apinav b{width:100%;margin:6px 0 0}.apinav a{border:1px solid var(--line);font-size:13px}}
+@media(max-width:600px){.code{padding-top:50px}.ep{padding:16px}.ptab thead{display:none}.ptab tr{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;padding:10px 0;border-bottom:1px solid var(--line)}.ptab td{border:0;padding:0;white-space:normal}.ptab td:nth-child(2){align-self:center}.ptab td:nth-child(3){grid-column:1/-1;color:var(--mute);font-size:13.5px}}
+details{border-bottom:1px solid var(--line);padding:16px 0}
+summary{cursor:pointer;font-weight:600;font-size:17px;min-height:28px}
+details p{color:var(--mute);margin:10px 0 0}
+.ctaband{background:radial-gradient(700px 300px at 80% 0,#3a2f9a 0,transparent 70%),var(--deep);color:#fff;text-align:center}
+.ctaband .lead{color:#c9c6e4;margin:0 auto}
+.ctaband .cta{justify-content:center}
+footer{background:#0c0b1a;color:#9d99c2;font-size:14px}
+footer .wrap{display:flex;gap:24px;flex-wrap:wrap;justify-content:space-between}
+footer a{color:#cfcbef;text-decoration:none}footer .fl{display:flex;flex-wrap:wrap;gap:8px 18px}
+.view{display:none}.view.on{display:block}
+@media(max-width:900px){.hero .wrap,.gwrap,.two,.flow{grid-template-columns:minmax(0,1fr)}.codechip{position:static;width:auto;margin-top:14px}.sample{margin-top:14px}}
+@media(max-width:600px){nav.top a.nl{padding:8px 8px;font-size:14px}nav.top .btn.p{display:none}table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--line)}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;white-space:normal;color:var(--mute)}.stack td:empty{display:none}}
+@media(prefers-reduced-motion:reduce){.ln,.bar i,.ended{transition:none}}
+
+/* light theme */
+.callcard{color:#fff}.facts{gap:22px}
+nav.top{background:color-mix(in srgb,var(--bg) 92%,transparent);color:var(--ink);border-bottom:1px solid var(--line)}
+.logo{color:var(--ink)}.logo b{color:var(--v2)}.logo i{background:#5b4ce014}.logo svg{stroke:var(--v)}
+nav.top a.nl{color:var(--mute)}
+nav.top a.nl:hover,nav.top a.nl[aria-current]{color:var(--ink);background:var(--alt)}
+.hero,.ptop{background:radial-gradient(900px 480px at 88% 0,#e9e5ff 0,transparent 62%),radial-gradient(700px 380px at 0 100%,#e4f8f1 0,transparent 60%),var(--bg);color:var(--ink);border-bottom:1px solid var(--line)}
+.hero h1 span{color:var(--v2)}
+.hero .lead,.ptop .lead{color:var(--mute)}
+.pill{color:var(--v2);background:#5b4ce012;border-color:#5b4ce033}
+.dark .pill{color:#cfcbef;background:#ffffff10;border-color:#ffffff1c}
+.facts{color:var(--mute)}.facts b{color:var(--ink)}
+.btn.g{border-color:var(--line);color:var(--ink);background:var(--card)}
+.btn.g:hover{border-color:var(--v)}
+.sample{color:var(--mute)}
+.ctaband{background:radial-gradient(700px 300px at 80% 0,#e9e5ff 0,transparent 70%),var(--alt);color:var(--ink)}
+.ctaband .lead{color:var(--mute)}
+.jump a{color:var(--ink);border-color:var(--line);background:var(--card)}
+.jump a:hover{background:var(--alt);border-color:var(--v)}
+.prices,.stack3{margin-top:28px}
+.ptop{padding-bottom:clamp(40px,5vw,64px)!important}
+
+/* neutral pass */
+:root{--deep:#121318;--v2:#4a3cc9}
+.hero,.ptop{background:var(--bg)}
+.ctaband{background:var(--alt)}
+.hero h1 span{color:var(--ink)}
+.hero h1{font-weight:800}
+.hero h1 span{color:#55536a}
+.pill{color:var(--mute);background:var(--alt);border-color:var(--line)}
+.btn.p{box-shadow:none}
+.ic{background:var(--alt);color:var(--ink);border:1px solid var(--line)}
+.tn,.t1 .tn{background:var(--ink);color:var(--bg);box-shadow:none}
+.t3{background:var(--alt);border-color:var(--line)}
+.ai1{border-color:var(--line)}
+.tag{color:var(--ink);background:var(--alt);border:1px solid var(--line)}
+.flowline span{background:var(--alt);color:var(--ink);border:1px solid var(--line)}
+.tab[aria-selected=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.nd.hot{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+td.y{color:var(--ink)}
+.callcard{background:#1a1b22;border-color:#ffffff1a}
+.av{background:#2c2d36}
+.dash{background:#1b1c23;border-color:#ffffff14}
+.logo i{background:var(--alt);border:1px solid var(--line)}
+ul.ck.dk li::before{border-color:var(--ink)}
+
+:root{--bg:#ffffff;--alt:#f6f6f7;--card:#ffffff;--line:#e6e6e9;--ink:#141417;--mute:#5f6068}
+.code,.codechip{background:#0f1014}
+footer{background:#0f1013}
+
+/* always light */
+:root,:root[data-theme=dark],:root[data-theme=light]{color-scheme:light}
+
+/* uniform purple accent */
+html,body{background:#ffffff}
+:root{--a:#5b4ce0;--at:#5b4ce012;--ab:#5b4ce033;--v:#5b4ce0;--v2:#5b4ce0}
+a{color:var(--a)}
+.btn.p{background:var(--a);color:#fff}.btn.p:hover{background:#4a3cc9}
+.btn.g:hover,.btn.o:hover{border-color:var(--a);color:var(--a)}
+.logo b{color:var(--a)}.logo svg{stroke:var(--a)}
+nav.top a.nl[aria-current]{color:var(--a);background:var(--at)}
+.hero h1 span{color:var(--a)}
+.pill{color:var(--a);background:var(--at);border-color:var(--ab)}
+.dot{background:var(--a);box-shadow:0 0 0 4px var(--ab)}
+.dark .dot,.callcard .dot{background:#6fe0bf;box-shadow:0 0 0 4px #6fe0bf33}
+.ic{background:var(--at);color:var(--a);border-color:var(--ab)}
+.tn,.t1 .tn{background:var(--a);color:#fff}
+.t3{background:var(--at);border-color:var(--ab)}
+.tag{color:var(--a);background:var(--at);border-color:var(--ab)}
+.flowline span{background:var(--at);color:var(--a);border-color:var(--ab)}
+.tab[aria-selected=true]{background:var(--a);border-color:var(--a);color:#fff}
+.nd.hot{background:var(--a);border-color:var(--a);color:#fff}
+td.y{color:var(--a)}
+ul.ck.dk li::before{border-color:var(--a)}
+.jump a:hover{border-color:var(--a);color:var(--a)}
+.mth{background:var(--at);color:var(--a)}
+.chip{background:var(--at);border-color:var(--ab);color:var(--a)}
+.apinav a:hover{background:var(--at)}
+.dark ul.ck li::before{border-color:#b9b0ff}
+.mode.e{background:#b9b0ff26;color:#cfc9ff}
+.codechip .k,.code .k{color:#b9b0ff}
+
+/* life */
+.hero,.ptop{position:relative;overflow:hidden}
+.hero::before,.ptop::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 1px 1px,#5b4ce030 1.2px,transparent 0) 0 0/24px 24px;-webkit-mask-image:linear-gradient(180deg,#000 0,#0000 85%);mask-image:linear-gradient(180deg,#000 0,#0000 85%);pointer-events:none}
+.hero::after{content:"";position:absolute;width:620px;height:620px;right:-120px;top:-160px;background:radial-gradient(closest-side,#5b4ce026,transparent);pointer-events:none}
+.hero>.wrap,.ptop>.wrap{position:relative;z-index:1}
+.stage::before{content:"";position:absolute;inset:-40px -30px;background:radial-gradient(closest-side,#5b4ce040,transparent 75%);filter:blur(10px);z-index:0}
+.stage>*{position:relative;z-index:1}
+.dark{background:radial-gradient(700px 420px at 85% 40%,#5b4ce03a,transparent 70%),#121318}
+.dash{box-shadow:0 30px 80px #5b4ce02e}
+.card,.fi,.price,.sim,.shot,.ep{transition:transform .2s,border-color .2s,box-shadow .2s}
+.card:hover,.fi:hover,.shot:hover{transform:translateY(-3px);border-color:var(--ab);box-shadow:0 14px 34px #5b4ce01c}
+.stack3{border-top:4px solid var(--a);border-radius:18px}
+.t1{border-top:0}
+.numcard .amt{color:var(--a)}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:18px;background:#fff;overflow:hidden}
+.kpis div{padding:26px 24px;border-left:1px solid var(--line)}
+.kpis div:first-child{border-left:0}
+.kpis b{display:block;font-size:clamp(34px,4vw,48px);font-weight:800;letter-spacing:-.03em;color:var(--a);line-height:1}
+.kpis span{display:block;margin-top:8px;color:var(--mute);font-size:15px}
+@media(max-width:800px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpis div:nth-child(3){border-left:0}.kpis div:nth-child(n+3){border-top:1px solid var(--line)}}
+@media(prefers-reduced-motion:reduce){.card:hover,.fi:hover,.shot:hover{transform:none}}
+
+.stage .codechip{position:relative;right:auto;bottom:auto;margin:-26px 0 0 auto;width:min(330px,80%)}
+.stage .sample{margin-top:12px}
+.hero::after{background:radial-gradient(closest-side,#5b4ce01c,transparent)}
+@media(max-width:900px){.hero::after{display:none}.stage .codechip{margin:14px 0 0;width:auto}}
+
+/* pricing life */
+.phead{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.9fr);gap:clamp(28px,5vw,72px);align-items:center;text-align:left}
+.phead .lead{margin:0}
+.incl{list-style:none;padding:0;margin:22px 0 0;display:flex;flex-wrap:wrap;gap:8px 18px}
+.incl li{padding-left:24px;position:relative;font-weight:600;font-size:15px}
+.incl li::before{content:"";position:absolute;left:2px;top:6px;width:12px;height:7px;border-left:2.5px solid var(--a);border-bottom:2.5px solid var(--a);transform:rotate(-45deg)}
+.layers{position:relative;height:300px;max-width:460px;width:100%;justify-self:center}
+.ly{position:absolute;left:0;right:0;height:96px;border-radius:18px;padding:18px 22px;display:flex;flex-direction:column;justify-content:center;gap:4px;border:1px solid var(--line);box-shadow:0 18px 40px #14141714}
+.ly b{font-size:18px}.ly span{font-size:14px;color:var(--mute)}
+.l1{bottom:0;background:#fff;transform:translateX(0)}
+.l2{bottom:84px;background:#f6f6f7;transform:translateX(18px)}
+.l3{bottom:168px;background:var(--a);color:#fff;border-color:var(--a);transform:translateX(36px);box-shadow:0 24px 50px #5b4ce055}
+.l3 span{color:#e2deff}
+.sv{display:inline-flex;align-items:center;gap:10px}
+.sv i{width:30px;height:30px;border-radius:9px;background:var(--at);color:var(--a);display:grid;place-items:center;flex:none}
+.sv svg{width:16px;height:16px}
+.ai1 .amt{color:var(--a)}
+.rt td.n{font-variant-numeric:tabular-nums}
+.dkcta{background:radial-gradient(700px 320px at 80% 0,#5b4ce040,transparent 70%),#121318;color:#fff}
+.dkcta .lead{color:#c9c9d2}
+@media(max-width:900px){.phead{grid-template-columns:minmax(0,1fr)}.layers{height:270px}.l2{transform:translateX(12px)}.l3{transform:translateX(24px)}.ly{right:24px}}
+@media(max-width:600px){.ly{height:84px;padding:14px 16px}.ly b{font-size:16px}.ly span{font-size:13px}.l2{bottom:74px}.l3{bottom:148px}.layers{height:240px}}
+
+.rcard{background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:0 30px 70px #14141718}
+.rcard .cc-h{color:var(--mute)}
+.rin{display:flex;gap:14px;align-items:center}
+.rin .av{background:var(--at);color:var(--a);font-size:20px}
+.rin b{display:block}.rin small{color:var(--mute)}
+.rhub{margin:16px 0 16px 20px;padding:12px 16px;border-radius:14px;background:var(--a);color:#fff;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;position:relative}
+.rhub::before{content:"";position:absolute;left:4px;top:-16px;height:16px;border-left:2px dashed var(--ab)}
+.rlogo{font-weight:800;font-size:18px;letter-spacing:-.02em}.rlogo b{color:#d9d4ff}
+.rhub small{color:#e2deff}
+.routes{display:grid;gap:10px;margin-left:44px;position:relative}
+.routes::before{content:"";position:absolute;left:-24px;top:-16px;bottom:26px;border-left:2px dashed var(--ab)}
+.rt1{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2px 12px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:#fff}
+.rt1::before{content:"";position:absolute;left:-24px;top:50%;width:22px;border-top:2px dashed var(--ab)}
+.rt1 i{grid-row:span 2;width:10px;height:10px;border-radius:50%;background:var(--a);box-shadow:0 0 0 4px var(--at)}
+.rt1 b{font-size:15px}.rt1 small{grid-column:2;color:var(--mute);font-size:13px}
+.rt1 em{grid-row:1/span 2;grid-column:3;font-style:normal;font-size:12px;font-weight:600;color:var(--a);background:var(--at);border:1px solid var(--ab);padding:3px 9px;border-radius:99px;white-space:nowrap}
+.rt1.opt{border-style:dashed;background:#fafafb}
+.rt1.opt i{background:#fff;border:2px solid var(--a);box-shadow:none}
+.rt1.on i{animation:pulse 2.4s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 4px var(--at)}50%{box-shadow:0 0 0 8px #5b4ce000}}
+.gstage::before{background:radial-gradient(closest-side,#5b4ce050,transparent 75%)}
+@media(max-width:600px){.rt1 em{display:none}.routes{margin-left:30px}.routes::before,.rt1::before{left:-18px}.rt1::before{width:16px}}
+@media(prefers-reduced-motion:reduce){.rt1.on i{animation:none}}
+
+main.view{overflow-x:clip}
+@media(max-width:900px){.stage::before{inset:-30px 0}}
+</style>
+<script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
+</head>
+<body>
+<nav class="top" aria-label="Main"><div class="wrap">
+  <a class="logo" href="#home"><i><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b9b0ff" stroke-width="2.2"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/></svg></i><span>sim<b>bue</b></span></a>
+  <a class="nl" href="#home" data-v="home">Product</a>
+  <a class="nl" href="#features" data-v="features">Features</a>
+  <a class="nl" href="#console" data-v="console">Console</a>
+  <a class="nl" href="#developers" data-v="developers">Developers</a>
+  <a class="nl" href="#pricing" data-v="pricing">Pricing</a>
+  <a class="nl" href="https://streaming.kosherphone.com/admin/">Sign in</a>
+  <a class="btn p" href="https://tinyurl.com/meet-davidgoodman">Book a demo</a>
+</div></nav>
+
+<!-- ============ HOME ============ -->
+<main id="v-home" class="view">
+<section class="hero band"><div class="wrap">
+  <div>
+    <div class="pill"><span class="dot"></span>Real carrier lines, not VoIP</div>
+    <h1>The cellular API. <span>Real mobile numbers, programmable.</span></h1>
+    <p class="lead">Simbue gives your business real carrier cellular lines. Put a number on an eSIM, route its calls to your own PBX, and control every call and text from one console or one API. Add AI when you want it: ours, your own, or none at all.</p>
+    <div class="cta"><a class="btn p" href="https://tinyurl.com/meet-davidgoodman">Book a demo</a><a class="btn g" href="#developers">For developers</a></div>
+    
+  </div>
+  <div class="stage">
+    <div class="rcard" aria-label="How Simbue routes a call">
+      <div class="cc-h"><span class="live">● LIVE</span><span>Incoming call</span></div>
+      <div class="rin"><div class="av"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/></svg></div><div><b>+1 202 555 0106</b><small>calling +1 212 555 0113</small></div></div>
+      <div class="rhub"><span class="rlogo">sim<b>bue</b></span><small>real carrier line · routing · call log</small></div>
+      <div class="routes">
+        <div class="rt1 on"><i></i><b>Your PBX</b><small>desk phones, menus, extensions</small><em>PBX first</em></div>
+        <div class="rt1 on"><i></i><b>Cell phone</b><small>eSIM, backup if the PBX is down</small><em>ring together</em></div>
+        <div class="rt1 opt"><i></i><b>AI, optional</b><small>Guardian, your own AI, or none</small><em>your choice</em></div>
+      </div>
+    </div>
+    <div class="codechip"><span class="k">POST</span> your-webhook<br>{ <span class="s">"event"</span>: <span class="s">"Call started"</span>,<br>&nbsp;&nbsp;<span class="s">"to"</span>: <span class="s">"Your PBX"</span> }</div>
+    <p class="sample">Illustration with sample data.</p>
+  </div>
+</div></section>
+
+<section class="band" style="padding-bottom:0"><div class="wrap"><div class="kpis">
+  <div><b>4</b><span>ways to ring: cell, PBX, both, or PBX first</span></div>
+  <div><b>20 min</b><span>to connect your PBX</span></div>
+  <div><b>19</b><span>webhook event types</span></div>
+  <div><b>1</b><span>real mobile number on phone, PBX and API</span></div>
+</div></div></section>
+<section class="band"><div class="wrap">
+  <h2>Everything a phone company does, as software</h2>
+  <p class="lead">Numbers, SIMs, voice, texts, routing, AI screening and billing in one platform. Use the console, or build it into your product through the API.</p>
+  <div class="grid" id="feat"></div>
+  <div class="cta"><a class="btn o" href="#features">See every feature</a><a class="btn o" href="#console">Tour the console</a></div>
+</div></section>
+
+<section class="band alt"><div class="wrap">
+  <h2>Why real cellular beats a virtual number</h2>
+  <p class="lead">VoIP APIs rent you a number that lives in the cloud. Simbue gives you a line on a real mobile network, so it works like the phone in your pocket because it is one.</p>
+  <div class="tblwrap scroll"><table class="stack">
+    <thead><tr><th></th><th>Typical VoIP API</th><th>Simbue</th></tr></thead>
+    <tbody id="cmp"></tbody>
+  </table></div>
+</div></section>
+
+<section class="band"><div class="wrap">
+  <h2>Ring the cell, your PBX, or both</h2>
+  <p class="lead">Every call passes through Simbue, which decides where it rings, keeps the call log and protects it. Pick a ring order per number; switch any time.</p>
+  <div class="tabs" role="tablist" id="rtabs"></div>
+  <div class="flow"><div class="lanes" id="lanes"></div><div id="rdesc"></div></div>
+</div></section>
+
+<section class="band dark"><div class="wrap gwrap">
+  <div>
+    <div class="pill"><span class="dot"></span>Optional: Guardian AI</div>
+    <h2>Add AI when you want it. Ours or your own.</h2>
+    <p class="lead">Simbue works fully without AI. When you want it, turn on Guardian, our AI that hears a scam and ends the call while it is happening, or connect your own AI platform through SIP, webhooks and the API.</p>
+    <ul class="ck">
+      <li>Off by default: no AI unless you switch it on, per number</li>
+      <li>Bring your own AI: send calls to your AI voice agent over SIP and texts to your server</li>
+      <li>Guardian rules in plain English for calls, texts, or both</li>
+      <li>Start in Log only to see what it would catch, then switch to Enforce</li>
+      <li>Hold suspicious texts and text an alert to family or a caretaker</li>
+            <li>Works on PBX calls too: listening starts when the cell answers</li>
+    </ul>
+  </div>
+  <div class="stage gstage"><div class="callcard" aria-label="Example of Guardian ending a scam call">
+      <div class="cc-h"><span class="live">● LIVE</span><span>Incoming call · Guardian listening</span></div>
+      <div class="who"><div class="av">?</div><div><b>+1 202 555 0106</b><small>calling your Simbue line</small></div></div>
+      <div class="tx" id="tx">
+        <div class="ln">“Hello, this is Mark from the fraud department at your bank.”</div>
+        <div class="ln">“We've detected some suspicious charges on your account.”</div>
+        <div class="ln bad">“To secure it, I need you to read me your full card number.”</div>
+      </div>
+      <div class="risk"><span>Scam risk</span><b id="rv">4%</b></div>
+      <div class="bar"><i id="rb"></i></div>
+      <div class="ended" id="end"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/><path d="M9 12l2 2 4-4"/></svg>Call ended by Guardian · alert texted to family</div>
+    </div>
+    <p class="sample" style="color:#9a9aa5">Illustration with sample data.</p></div>
+</div></section>
+
+<section class="band"><div class="wrap two">
+  <div>
+    <h2>Built for developers from day one</h2>
+    <p class="lead">One API key to call Simbue, one signed webhook that receives every event as it happens. Pause, filter by event, rotate secrets and replay deliveries from the console.</p>
+    <div class="chips" id="evchips"></div>
+    <div class="cta"><a class="btn o" href="#developers">Read the developer overview</a></div>
+  </div>
+  <div class="code"><button class="copy" data-c="curl https://streaming.kosherphone.com/v1/lines -H &quot;Authorization: Bearer sk_live_…&quot;">Copy</button><span class="c"># List your lines</span>
+curl https://streaming.kosherphone.com/v1/lines \
+  -H <span class="s">"Authorization: Bearer sk_live_…"</span>
+
+<span class="c"># Or send the key as X-API-Key.</span>
+<span class="c"># Rotating a key stops the old one immediately.</span></div>
+</div></section>
+
+<section class="band ctaband"><div class="wrap">
+  <h2>Put a real cellular line in your product this week</h2>
+  <p class="lead">Start with one number on an eSIM, and connect your PBX in about 20 minutes.</p>
+  <div class="cta"><a class="btn p" href="https://tinyurl.com/meet-davidgoodman">Book a demo</a><a class="btn g" href="#developers">For developers</a></div>
+</div></section>
+</main>
+
+<!-- ============ FEATURES ============ -->
+<main id="v-features" class="view">
+<section class="hero band"><div class="wrap" style="grid-template-columns:minmax(0,1fr)">
+  <div><h1>Every feature, in one place</h1><p class="lead">Numbers, SIMs, voice, texts, PBX routing, Guardian AI, developer tools and billing. Everything below is live in the Simbue console today.</p>
+  <div class="jump" id="fjump"></div></div>
+</div></section>
+<div id="fsecs"></div>
+<section class="band ctaband"><div class="wrap">
+  <h2>See it working</h2>
+  <p class="lead">Take the console tour, or book a demo and we will set up a live number for you.</p>
+  <div class="cta"><a class="btn p" href="https://tinyurl.com/meet-davidgoodman">Book a demo</a><a class="btn g" href="#console">Console tour</a></div>
+</div></section>
+</main>
+
+<!-- ============ CONSOLE ============ -->
+<main id="v-console" class="view">
+<section class="hero band"><div class="wrap" style="grid-template-columns:minmax(0,1fr)">
+  <div><h1>The Simbue console</h1><p class="lead">One place to run your lines: buy numbers, choose where calls ring, write Guardian rules and watch what they catch. Click any screen to see it full size.</p></div>
+</div></section>
+<section class="band"><div class="wrap">
+  <div class="shots" id="shots"></div>
+  <p class="sample" style="color:var(--mute)">Screens from the live console. Phone numbers and account names replaced with sample data.</p>
+</div></section>
+<div class="lb" id="lb" hidden><button class="lbx" id="lbx" aria-label="Close">×</button><button class="lbn lbp" id="lbp" aria-label="Previous">‹</button><figure><img id="lbi" alt=""><figcaption id="lbc"></figcaption></figure><button class="lbn lbnx" id="lbn" aria-label="Next">›</button></div>
+</main>
+
+<!-- ============ DEVELOPERS ============ -->
+<main id="v-developers" class="view">
+<section class="hero band"><div class="wrap" style="grid-template-columns:minmax(0,1fr)">
+  <div><h1>Developers</h1><p class="lead">REST API, signed webhooks and a standard SIP trunk. If your system speaks HTTP or SIP, it can use Simbue.</p><div class="cta"><a class="btn p" href="#developers" id="toref">API reference</a></div></div>
+</div></section>
+<section class="band"><div class="wrap two">
+  <div>
+    <h2>API keys</h2>
+    <p>Create keys per environment or per team member in <b>API &amp; webhooks</b>. Send the key as a Bearer token or as <code>X-API-Key</code>. Rotating gives a new key and stops the old one immediately.</p>
+    <h2 style="margin-top:36px">Event webhook</h2>
+    <p>Set one endpoint URL and choose the events you want, or leave all selected. Each delivery is signed with your secret so you can verify it came from Simbue. Send a test event, see recent deliveries, pause without losing settings.</p>
+  </div>
+  <div class="code"><button class="copy" data-c="curl https://streaming.kosherphone.com/v1/lines -H &quot;Authorization: Bearer sk_live_…&quot;">Copy</button><span class="c"># Quick start</span>
+curl https://streaming.kosherphone.com/v1/lines \
+  -H <span class="s">"Authorization: Bearer sk_live_…"</span></div>
+</div></section>
+<section class="band" id="api-ref"><div class="wrap">
+  <h2>API reference</h2>
+  <p class="lead">The Guardian API lets any channel you run, voice or text, use Simbue's detection and action engine. Open a session when a call or thread starts, stream in what each side says, and Simbue judges it against the line's active rules and tells you what to do.</p>
+  <div class="apimeta">
+    <div><span>Base URL</span><code>https://streaming.kosherphone.com</code></div>
+    <div><span>Auth</span><code>x-api-key: sk_live_…</code></div>
+    <div><span>Format</span><code>JSON over HTTPS</code></div>
+  </div>
+  <div class="flowline" aria-label="Session lifecycle"><span>Open session</span><i>→</i><span>Stream utterances</span><i>→</i><span>Heartbeat in silence</span><i>→</i><span>End session</span></div>
+  <div class="apigrid">
+    <nav class="apinav" id="apinav" aria-label="Endpoints"></nav>
+    <div id="apieps"></div>
+  </div>
+</div></section>
+<section class="band alt"><div class="wrap">
+  <h2>Webhook events</h2>
+  <div class="grid" id="evgrid"></div>
+</div></section>
+<section class="band"><div class="wrap two">
+  <div>
+    <h2>SIP trunk for your PBX</h2>
+    <p>Simbue recognises your PBX by its IP address, so the trunk needs no username, password or registration. Up to 5 PBX addresses per account. Only your PBX can use your numbers, and only with your own Simbue numbers as caller ID.</p>
+    <p>Works with FreePBX, 3CX, FusionPBX, Asterisk, Yeastar and any PBX that supports SIP trunks.</p>
+    <p>A call your PBX sends back to the cell rings only the cell, shows the original caller with carrier caller verification, and is billed once. An <code>X-Simbue-Call</code> header lets your PBX match calls exactly.</p>
+  </div>
+  <div class="tblwrap" style="margin-top:0"><table>
+    <tbody id="sip"></tbody>
+  </table></div>
+</div></section>
+</main>
+
+<!-- ============ PRICING ============ -->
+<main id="v-pricing" class="view">
+<section class="ptop band"><div class="wrap phead">
+  <div>
+    <div class="pill"><span class="dot"></span>Pay as you go</div>
+    <h1>Simple pricing, built in layers</h1>
+    <p class="lead">Start with a real mobile number on a SIM. Pay for the voice, texts and data it uses. Add Guardian AI on top only where you want it.</p>
+    <ul class="incl"><li>No contracts</li><li>No minimums</li><li>Prepaid wallet</li><li>Itemised billing</li></ul>
+  </div>
+  <div class="layers" aria-hidden="true">
+    <div class="ly l3"><b>Guardian AI</b><span>$0.01 per 6s voice · $0.01 per text</span></div>
+    <div class="ly l2"><b>Cellular services</b><span>Voice · SMS · MMS · Data</span></div>
+    <div class="ly l1"><b>Phone number + SIM</b><span>$2 a month · $3 SIM</span></div>
+  </div>
+</div></section>
+<section class="band" style="padding-top:8px"><div class="wrap">
+  <div class="stack3">
+    <div class="tier t1">
+      <div class="tl"><span class="tn">1</span><div><h3>Phone number and SIM</h3><p>Every line is a real carrier mobile number on a SIM. Virtual numbers used only on your PBX or the API are provisioned on an eSIM.</p></div></div>
+      <div class="numgrid">
+        <div class="numcard">
+          <div class="amt">$2<small>per number, per month</small></div>
+          <ul class="ck dk"><li>Real mobile line, not VoIP</li><li>Caller ID, E911, call log and number lists included</li></ul>
+        </div>
+        <div class="sims">
+          <div class="sim"><div class="sn">eSIM</div><div class="sp">$3 <small>one time</small></div><p>Delivered instantly by QR code. Also used to provision virtual numbers.</p></div>
+          <div class="sim"><div class="sn">Physical SIM</div><div class="sp">$3 <small>one time</small></div><p>Plus $9.95 shipping per 1,000 SIMs.</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="tier t2">
+      <div class="tl"><span class="tn">2</span><div><h3>Cellular services</h3><p>Voice, texts and mobile data. Pay only for what the line uses, same rate in both directions.</p></div></div>
+      <div class="tblwrap" style="margin:0"><table class="rt stack">
+        <thead><tr><th>Service</th><th class="n">Inbound</th><th class="n">Outbound</th><th>Billed</th></tr></thead>
+        <tbody>
+          <tr><td><span class="sv"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/></svg></i><b>Voice</b></span></td><td class="n">$0.02</td><td class="n">$0.02</td><td>per minute</td></tr>
+          <tr><td><span class="sv"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4z"/></svg></i><b>SMS</b></span></td><td class="n">$0.015</td><td class="n">$0.015</td><td>per message, up to 140 characters</td></tr>
+          <tr><td><span class="sv"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg></i><b>MMS</b></span></td><td class="n">$0.015</td><td class="n">$0.015</td><td>per message</td></tr>
+          <tr><td><span class="sv"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5a10 10 0 0114 0M8 15.5a6 6 0 018 0M12 19h.01M2 9.5a14 14 0 0120 0"/></svg></i><b>Data</b></span></td><td class="n">$0.01</td><td class="n">$0.01</td><td>per MB</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="tier t3">
+      <div class="tl"><span class="tn">3</span><div><h3>Guardian AI <span class="tag" style="margin:0 0 0 6px;vertical-align:middle">Optional</span></h3><p>Layered on top of the call or text. Turn it on per number and per rule.</p></div></div>
+      <div class="aibox">
+        <div class="ai1"><div class="amt">$0.01<small>per 6 seconds of voice analysed</small></div><p>Guardian listens to the call live and flags it, ends it or alerts a contact.</p></div>
+        <div class="ai1"><div class="amt">$0.01<small>per text message analysed</small></div><p>Guardian reads each text and flags or holds it.</p></div>
+        <p class="ainote">Charged in addition to the voice or SMS rate above. No AI, or using your own? You only pay for layers 1 and 2.</p>
+      </div>
+    </div>
+  </div>
+
+  <h2 style="margin-top:72px">Questions</h2>
+  <div id="faq"></div>
+</div></section>
+<section class="band ctaband dkcta"><div class="wrap">
+  <h2>Need volume pricing?</h2>
+  <p class="lead">Running thousands of lines or heavy AI screening? Talk to us about committed volume.</p>
+  <div class="cta"><a class="btn p" href="https://tinyurl.com/meet-davidgoodman">Talk to us</a></div>
+</div></section>
+</main>
+
+<footer class="band" style="padding-block:36px"><div class="wrap">
+  <div><span style="font-weight:800;color:#fff;font-size:18px">sim<span style="color:#b9b0ff">bue</span></span><div style="margin-top:6px">Real carrier lines, programmable.</div></div>
+  <div class="fl"><a href="#home">Product</a><a href="#features">Features</a><a href="#console">Console</a><a href="#developers">Developers</a><a href="#pricing">Pricing</a><a href="https://streaming.kosherphone.com/admin/">Sign in</a></div>
+  <div>© 2026 Simbue · simbue.com</div>
+</div></footer>
+
+<script>
+{
+const I={
+ num:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/>',
+ sim:'<path d="M7 2h7l5 5v13a2 2 0 01-2 2H7a2 2 0 01-2-2V4a2 2 0 012-2z"/><rect x="8" y="11" width="8" height="7" rx="1"/>',
+ pbx:'<rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/>',
+ msg:'<path d="M4 5h16v11H8l-4 4z"/>',
+ ai:'<path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/><path d="M9 12l2 2 4-4"/>',
+ api:'<path d="M8 8l-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/>',
+ wal:'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M16 12h2M3 10h18"/>',
+ log:'<path d="M4 6h16M4 12h16M4 18h10"/>',
+ list:'<circle cx="12" cy="12" r="9"/><path d="M6 6l12 12"/>'
+};
+const ic=k=>`<div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${I[k]}</svg></div>`;
+const feats=[
+ ['num','Real mobile numbers','Buy US carrier numbers on demand. Port, swap, suspend and resume lines from the console or API.'],
+ ['sim','eSIM and physical SIMs','Install a number on any unlocked eSIM phone by QR code, or order physical SIMs shipped to you. Wi-Fi calling keeps lines working abroad.'],
+ ['pbx','SIP trunk to your PBX','Connect FreePBX, 3CX, FusionPBX, Asterisk or Yeastar with IP based auth. No registration, set up in about 20 minutes.'],
+ ['msg','Texts and MMS','Send and receive SMS and MMS on the same real number your customers already call. Hold suspicious texts automatically.'],
+ ['ai','Optional AI','Use Guardian to stop scams in under a second, bring your own AI platform, or run with no AI at all.'],
+ ['list','Number lists','Allow lists and block lists per line, so trusted contacts always get through and known bad numbers never do.'],
+ ['api','API and webhooks','REST API keys plus one signed webhook for every call, text, SIM, number and wallet event.'],
+ ['wal','Wallet and usage billing','Prepaid wallet with auto refill and low balance alerts. Every charge itemised, nothing billed twice.'],
+ ['log','Full call and text log','Every call and text recorded with direction, duration, routing and what Guardian decided, searchable in one place.']
+];
+document.getElementById('feat').innerHTML=feats.map(f=>`<div class="card">${ic(f[0])}<h3>${f[1]}</h3><p>${f[2]}</p></div>`).join('');
+
+const cmp=[
+ ['Number type','Virtual VoIP number','Real mobile line on a carrier network'],
+ ['Lives on a phone','Needs an app','Native eSIM on any unlocked phone'],
+ ['Caller verification','Varies by route','Carrier caller verification, original caller shown on hand back'],
+ ['Works with your PBX','Yes','Yes, plus automatic fallback to the cell'],
+ ['AI on calls and texts','Build it yourself','Optional: built in Guardian, or bring your own'],
+ ['Abroad','Depends on the app','Wi-Fi calling on the line itself']
+];
+document.getElementById('cmp').innerHTML=cmp.map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td class="y">${r[2]}</td></tr>`).join('');
+
+const ring={
+ 'Cell only':{on:['Caller','Simbue','Cell'],off:['Your PBX'],d:'<h3>Cell only</h3><p>Only the phone with the eSIM rings. The simplest setup: a real mobile number on one phone.</p>'},
+ 'Ring together':{on:['Caller','Simbue','Cell','Your PBX'],off:[],d:'<h3>Ring together</h3><p>The cell and your PBX ring at once. Whoever answers first takes the call; the other stops. Ring time from 5 to 120 seconds.</p><p><b>Good for:</b> answer wherever I am.</p>'},
+ 'PBX first':{on:['Caller','Simbue','Your PBX','Cell'],off:[],d:'<h3>PBX first, cell as backup</h3><p>Your PBX handles office hours, menus and extensions. If it is down, refuses the call or does not answer within 10 to 60 seconds, the cell rings anyway.</p><p><b>Good for:</b> office routing with a safety net.</p>'},
+ 'PBX only':{on:['Caller','Simbue','Your PBX'],off:['Cell'],d:'<h3>PBX only</h3><p>Calls go straight to your PBX. It can still send any call to the cell through the trunk, shown with the real caller and billed once.</p>'}
+};
+const rt=document.getElementById('rtabs'),ln=document.getElementById('lanes'),rd=document.getElementById('rdesc');
+rt.innerHTML=Object.keys(ring).map((k,i)=>`<button class="tab" role="tab" aria-selected="${i==1}" data-k="${k}">${k}</button>`).join('');
+const showRing=k=>{const r=ring[k];const a='<span class="arr">→</span>';
+ const branch=r.on.slice(2);
+ ln.innerHTML=`<div class="node"><span class="nd">Caller</span>${a}<span class="nd hot">Simbue</span>${a}${branch.map(b=>`<span class="nd hot">${b}</span>`).join(k=='PBX first'?a:'<span class="arr">+</span>')}${r.off.map(b=>`<span class="nd dim">${b}</span>`).join('')}</div><div class="node"><span class="nd">Desk phone</span>${a}<span class="nd">Your PBX</span>${a}<span class="nd hot">Simbue</span>${a}<span class="nd">Person called sees your number</span></div>`;
+ rd.innerHTML=r.d;
+ rt.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.k==k));};
+rt.addEventListener('click',e=>{const t=e.target.closest('.tab');if(t)showRing(t.dataset.k)});
+showRing('Ring together');
+
+const ev={Calls:['Call started','Call cut by Guardian','Call blocked'],Texts:['Text received','Text sent','Text held'],'Numbers and SIMs':['Line suspended','Line resumed','Number swapped','SIM replaced','Number bought','SIMs ordered','SIMs shipped'],Account:['Verification sent','Verification approved','Verification needs a fix','Wallet topped up','Low balance','Auto-refill failed']};
+document.getElementById('evchips').innerHTML=Object.values(ev).flat().slice(0,10).map(e=>`<span class="chip">${e}</span>`).join('')+'<span class="chip">+ 9 more</span>';
+document.getElementById('evgrid').innerHTML=Object.entries(ev).map(([g,l])=>`<div class="card"><h3>${g}</h3><div class="chips">${l.map(e=>`<span class="chip">${e}</span>`).join('')}</div></div>`).join('');
+
+const sip=[['SIP server','Shown in your console after sign in'],['Port and transport','5060, UDP or TCP'],['Registration','None'],['Authentication','IP based'],['Codecs','G.711 u-law and a-law'],['DTMF','RFC 2833 / RFC 4733'],['Number format','E.164, for example +12125551234'],['Media','UDP 16384 to 32768']];
+document.getElementById('sip').innerHTML=sip.map(r=>`<tr><th style="width:42%">${r[0]}</th><td><code>${r[1]}</code></td></tr>`).join('');
+
+const faq=[
+ ['How does billing work?','You keep a prepaid wallet. Calls, texts and AI checks are drawn from it as they happen, and number fees monthly. Turn on auto refill so a line never stops, and get an alert when the balance runs low.'],
+ ['Is a number really a mobile line?','Yes. Every Simbue number is a real carrier mobile line, not a VoIP number. It can live on an eSIM in a phone, on your PBX, or both at the same time.'],
+ ['Do I have to use Guardian AI?','No. AI is optional and priced separately. A line with Guardian off pays only the number and service rates. You choose which numbers and rules use it, and how much of each call it checks.'],
+ ['What counts as one SMS?','Each message up to 140 characters is billed as one SMS, inbound or outbound.'],
+ ['Is a call my PBX sends to the cell billed twice?','No. Simbue recognises the hand back, keeps it as one call and bills it once.'],
+ ['Can I get volume pricing?','Yes. For large fleets of lines or heavy AI screening, book a call and we will build a committed volume plan.']
+];
+document.getElementById('faq').innerHTML=faq.map(f=>`<details><summary>${f[0]}</summary><p>${f[1]}</p></details>`).join('');
+
+document.addEventListener('click',e=>{const b=e.target.closest('.copy');if(!b)return;
+ navigator.clipboard.writeText(b.dataset.c).then(()=>{b.textContent='Copied';setTimeout(()=>b.textContent='Copy',1500)}).catch(()=>{b.textContent='Select to copy'})});
+
+
+const FS=[
+ {id:'numbers',ic:'num',t:'Phone numbers',d:'Real carrier mobile numbers you control from the console or API.',f:[
+  ['Buy numbers on demand','Pick and activate new US mobile numbers in seconds.'],
+  ['Bring your existing number','Add a number you already have and manage it alongside new ones.'],
+  ['Sync from carrier','Pull the latest line status straight from the carrier.'],
+  ['Bulk update','Change handling, Guardian and routing on many numbers at once.'],
+  ['Swap number','Give a line a new number without changing its SIM.'],
+  ['Suspend and resume','Pause a line instantly and bring it back when you need it.'],
+  ['Caller ID name','Set the name people see when this number calls.'],
+  ['E911 address','Emergency address on file per number, pushed straight to the carrier.'],
+  ['Forwarding number','Send calls on to another number when you want.'],
+  ['MMS on or off','Enable picture messaging per number.']]},
+ {id:'sims',ic:'sim',t:'eSIM and SIM cards',d:'Every number lives on a SIM, so it works like a real phone line because it is one.',f:[
+  ['eSIM by QR code','Install a number on any unlocked eSIM phone in about a minute.'],
+  ['Physical SIMs','Order SIM cards in bulk and track them from ordered to shipped.'],
+  ['Move to another SIM','Give a number a new SIM; the old one becomes a spare.'],
+  ['SIM replacement','Replace a lost or damaged SIM without losing the number.'],
+  ['Mobile data','Every line can use cellular data, billed per MB.'],
+  ['Wi-Fi calling abroad','Lines keep making and taking calls over Wi-Fi outside the US.'],
+  ['Virtual numbers','Run a number only on your PBX or the API, provisioned on an eSIM.']]},
+ {id:'voice',ic:'pbx',t:'Voice and call routing',d:'Every call passes through Simbue, which decides where it rings and keeps one clean record.',f:[
+  ['Cell only','Only the phone with the SIM rings.'],
+  ['Ring together','The cell and your PBX ring at once, 5 to 120 seconds. First to answer wins.'],
+  ['PBX first, cell as backup','Your PBX handles the call; if it is down or does not answer in 10 to 60 seconds, the cell rings.'],
+  ['PBX only','Calls go straight to your phone system.'],
+  ['Hand back to the cell','Your PBX can send any call to the cell. Shows the real caller, never loops, billed once.'],
+  ['Ring one extension','Point a number at a full SIP address to ring one extension directly.'],
+  ['Outbound with your number','Desk phones and cell both show your Simbue number.'],
+  ['Exact call matching','An X-Simbue-Call header lets your PBX match calls exactly, even when many are in progress.']]},
+ {id:'pbx',ic:'pbx',t:'PBX and SIP trunking',d:'Connect the phone system you already run in about 20 minutes.',f:[
+  ['Works with any SIP PBX','FreePBX, 3CX, FusionPBX, Asterisk, Yeastar and more.'],
+  ['IP based trunk','No username, password or registration to manage.'],
+  ['Up to 5 PBX addresses','Add every public IP your PBX sends from, or a hostname.'],
+  ['Caller ID protection','Only your PBX can use your numbers, and only with your own caller ID.'],
+  ['Optional PBX login','If your PBX challenges calls, Simbue answers with the credentials you set, stored encrypted.'],
+  ['Standard media','G.711 u-law and a-law, RFC 2833 / 4733 DTMF, UDP or TCP.']]},
+ {id:'messaging',ic:'msg',t:'SMS and MMS',d:'Texts on the same real number your customers already call.',f:[
+  ['Send and receive SMS','Inbound and outbound on every line.'],
+  ['Send and receive MMS','Pictures and media, switchable per number.'],
+  ['Direct, Monitor or Gate','Let texts through, check them as they pass, or hold each one until it is allowed.'],
+  ['Deliver anyway','Release a held text with one click.'],
+  ['Copy to your server','Send a copy of each text to your own URL as it happens.'],
+  ['Full message log','Every text with direction, status and what Guardian decided.']]},
+ {id:'byoai',ic:'api',t:'Bring your own AI',d:'Simbue runs fine with no AI. If you have your own AI platform, plug it in.',f:[
+  ['No AI required','Route calls and texts with no analysis at all. AI is off unless you switch it on.'],
+  ['AI voice agents over SIP','Point a number at your AI voice agent\'s SIP address and it answers like any PBX.'],
+  ['Texts to your server','Send a copy of every text to your URL, or Gate texts until your system allows them.'],
+  ['Real time events','Every call and text event delivered by signed webhook for your AI to act on.'],
+  ['Guardian API for your channels','Feed transcripts from your own channels into Simbue\'s engine through the API.']]},
+ {id:'guardian',ic:'ai',t:'Guardian AI (optional)',d:'Our own AI that listens to calls and reads texts, then acts while it still matters.',f:[
+  ['Plain English rules','Describe what to catch in your own words. No code, no keyword lists.'],
+  ['Calls, texts or both','Apply each rule to incoming, outgoing or both directions.'],
+  ['Log only or Enforce','Watch what a rule would catch first, then let it act.'],
+  ['End scam calls live','Typical time from scam words to hang up is under a second.'],
+  ['Alerts to family or staff','Text an alert contact the moment a call or text is flagged.'],
+  ['Confidence threshold','Set how sure Guardian must be before it acts, per rule.'],
+  ['Listening window','Check the first 60 seconds, or keep listening if something looks off.'],
+  ['Trusted numbers','Skip or include numbers you trust, per rule.'],
+  ['Replay and audit','Replay any call with its transcript, the risk score and every action taken.'],
+  ['Insights','Calls screened, flagged and cut, protection funnel and speech to hang up times.'],
+  ['Ready made rules','Senior fraud, SMS phishing, abusive language, AI or restricted platform access, and more.']]},
+ {id:'lists',ic:'list',t:'Number lists',d:'Decide who always gets through and who never does.',f:[
+  ['Trusted lists','Contacts that always reach the line.'],
+  ['Block lists','Numbers that are refused before they ring.'],
+  ['Shared across lines','Reuse one list on as many numbers as you want.']]},
+ {id:'api',ic:'api',t:'API and webhooks',d:'Everything in the console is available to your own systems.',f:[
+  ['REST API keys','Bearer token or X-API-Key header, one key per system or teammate.'],
+  ['Instant rotation','A rotated key stops the old one immediately.'],
+  ['One signed webhook','Every event delivered to one URL, signed so you can verify it.'],
+  ['19 event types','Calls, texts, numbers, SIMs, verification and wallet events.'],
+  ['Test and replay','Send a test event and see every recent delivery.'],
+  ['Pause anytime','Switch delivery off without losing your settings.']]},
+ {id:'account',ic:'wal',t:'Billing and account',d:'Prepaid, transparent and itemised.',f:[
+  ['Prepaid wallet','Calls, texts and AI checks drawn as they happen.'],
+  ['Auto refill','Top up automatically so a line never stops.'],
+  ['Low balance alerts','Know before you run out.'],
+  ['Monthly usage','Plan fees and usage for the month on your dashboard.'],
+  ['Company verification','Verify your business once and start buying numbers.'],
+  ['Activity log','Every call, text and change on the account in one timeline.']]}
+];
+document.getElementById('fjump').innerHTML=FS.map(x=>`<a href="#features" data-to="f-${x.id}">${x.t}</a>`).join('');
+document.getElementById('fsecs').innerHTML=FS.map((x,i)=>`<section class="band fband${i%2?' alt':''}" id="f-${x.id}"><div class="wrap fsec"><div class="fh">${ic(x.ic)}<div><h2>${x.t}</h2><p>${x.d}</p></div></div><div class="flist">${x.f.map(f=>`<div class="fi"><b>${f[0]}</b><span>${f[1]}</span></div>`).join('')}</div></div></section>`).join('');
+document.getElementById('fjump').addEventListener('click',e=>{const a=e.target.closest('a');if(!a)return;e.preventDefault();document.getElementById(a.dataset.to).scrollIntoView({behavior:reduce?'auto':'smooth'})});
+
+const SH=[
+ ['live','Guardian ends a scam call','The live replay: the transcript, the moment the scam phrase is heard, the risk score and the call ended in 2 seconds.'],
+ ['dashboard','Dashboard','Scam calls stopped, this month\'s spend, calls and texts, and every number at a glance.'],
+ ['insights','Guardian insights','Calls screened, flagged and cut off, the protection funnel and speech to hang up times.'],
+ ['rules','AI rules','Plain English rules for calls and texts, each in Log only or Enforce.'],
+ ['numbers','Phone numbers','Every line with its Guardian status, SIM type, plan and how calls and texts are handled.'],
+ ['number','A single number','Protection status, recent calls, E911, swap number and suspend line.'],
+ ['pbx','Phone system','Connect your PBX: add its address and create one SIP trunk.'],
+ ['dev','Event webhook','One signed webhook with 19 event types, a test button and delivery log.']
+];
+const sh=document.getElementById('shots');
+sh.innerHTML=SH.map((x,i)=>`<button class="shot" data-i="${i}"><img src="shots/${x[0]}.jpg" alt="${x[1]} screen in the Simbue console" loading="lazy"><div class="cap"><b>${x[1]}</b><span>${x[2]}</span></div></button>`).join('');
+const lb=document.getElementById('lb'),lbi=document.getElementById('lbi'),lbc=document.getElementById('lbc');let cur=0;
+const openLb=i=>{cur=(i+SH.length)%SH.length;lbi.src='shots/'+SH[cur][0]+'.jpg';lbi.alt=SH[cur][1];lbc.textContent=SH[cur][1]+'. '+SH[cur][2];lb.hidden=false;document.getElementById('lbx').focus()};
+sh.addEventListener('click',e=>{const b=e.target.closest('.shot');if(b)openLb(+b.dataset.i)});
+document.getElementById('lbx').addEventListener('click',()=>lb.hidden=true);
+document.getElementById('lbp').addEventListener('click',()=>openLb(cur-1));
+document.getElementById('lbn').addEventListener('click',()=>openLb(cur+1));
+lb.addEventListener('click',e=>{if(e.target===lb)lb.hidden=true});
+addEventListener('keydown',e=>{if(lb.hidden)return;if(e.key==='Escape')lb.hidden=true;if(e.key==='ArrowLeft')openLb(cur-1);if(e.key==='ArrowRight')openLb(cur+1)});
+
+const EP=[
+ {g:'Sessions',id:'open',m:'POST',p:'/v1/detect/sessions',t:'Open a session',d:'Call this the moment a call or message thread starts on a protected line. If the response says analyze: false, no active rule applies (or the other party is trusted), so there is nothing to stream. Still call End when it finishes so it appears in history.',
+  b:[['channel','string',1,'voice or sms'],['direction','string',1,'inbound or outbound'],['line','string',1,"The protected line's own number, E.164 or 10 digit US."],['remote_number','string',0,'The other party\'s number, if known.'],['external_id','string',0,'Your own call or thread id, echoed back in the audit trail.'],['callback_url','string',0,'A URL on your side. If an action is needed (for example terminate), Simbue POSTs the instruction here.'],['started_at','string',0,'ISO 8601 time. Defaults to now.']],
+  ex:`curl -X POST https://streaming.kosherphone.com/v1/detect/sessions \\
+  -H "x-api-key: sk_live_…" -H "Content-Type: application/json" \\
+  -d '{"channel":"voice","direction":"inbound",
+       "line":"+12125550113","remote_number":"+12025550106",
+       "callback_url":"https://your-server.com/simbue/actions"}'`,
+  r:[['201','Session opened. Returns session_id, analyze (boolean) and rules, the rule set resolved for this call.'],['400','Invalid request'],['401','Missing or invalid API key'],['404','Line not found']]},
+ {g:'Sessions',id:'utterances',m:'POST',p:'/v1/detect/sessions/{id}/utterances',t:'Stream utterances',d:'Send each speaker\'s utterance once it is final, not interim speech to text results. Simbue checks it against every active rule on the line and may trigger an action.',
+  b:[['utterances','array',1,'One or more utterances.'],['utterances[].speaker','string',1,'remote_party (the other side) or line_user (the protected line\'s owner).'],['utterances[].start_ms','integer',1,'Milliseconds from call start, used for time boxed rule windows.'],['utterances[].text','string',1,'The final transcript for this utterance.']],
+  ex:`curl -X POST https://streaming.kosherphone.com/v1/detect/sessions/SESSION_ID/utterances \\
+  -H "x-api-key: sk_live_…" -H "Content-Type: application/json" \\
+  -d '{"utterances":[{"speaker":"remote_party","start_ms":14000,
+       "text":"To secure it, I need you to read me your full card number."}]}'`,
+  r:[['200','Accepted and analysed'],['400','Invalid request'],['401','Missing or invalid API key'],['404','Session not found']]},
+ {g:'Sessions',id:'heartbeat',m:'POST',p:'/v1/detect/sessions/{id}/heartbeat',t:'Heartbeat during silence',d:'Rules with a time boxed window need to know the call is still going when nobody is talking. Send this every few seconds during silence so those windows close on schedule.',
+  b:[['call_elapsed_ms','integer',1,'Milliseconds since the call started.']],
+  ex:`curl -X POST https://streaming.kosherphone.com/v1/detect/sessions/SESSION_ID/heartbeat \\
+  -H "x-api-key: sk_live_…" -H "Content-Type: application/json" \\
+  -d '{"call_elapsed_ms":32000}'`,
+  r:[['200','OK'],['400','Invalid request'],['401','Missing or invalid API key'],['404','Session not found']]},
+ {g:'Sessions',id:'end',m:'POST',p:'/v1/detect/sessions/{id}/end',t:'End a session',d:'Always call this when the call or thread ends, even if the session opened with analyze: false. It is what puts the call in history and reporting.',
+  b:[['ended_at','string',0,'ISO 8601 time.'],['hangup_cause','string',0,'Free text, for example NORMAL_CLEARING or USER_BUSY.'],['stt_audio_seconds','number',0,'For voice: seconds of audio you ran through speech to text.'],['recording_path','string',0,'Filename of a recording you kept, if any.']],
+  ex:`curl -X POST https://streaming.kosherphone.com/v1/detect/sessions/SESSION_ID/end \\
+  -H "x-api-key: sk_live_…" -H "Content-Type: application/json" \\
+  -d '{"hangup_cause":"NORMAL_CLEARING","stt_audio_seconds":42}'`,
+  r:[['200','Session closed'],['400','Invalid request'],['401','Missing or invalid API key'],['404','Session not found']]},
+ {g:'Messages',id:'messages',m:'POST',p:'/v1/detect/messages',t:'Check a message thread',d:'For text channels where you already have the whole thread: skip the session lifecycle and submit it in one call for judgement.',
+  b:[['direction','string',1,'inbound or outbound'],['line','string',1,"The protected line's own number."],['remote_number','string',0,'The other party\'s number.'],['messages','array',1,'The thread, oldest first.'],['messages[].speaker','string',1,'remote_party or line_user'],['messages[].text','string',1,'Message text.']],
+  ex:`curl -X POST https://streaming.kosherphone.com/v1/detect/messages \\
+  -H "x-api-key: sk_live_…" -H "Content-Type: application/json" \\
+  -d '{"direction":"inbound","line":"+12125550113",
+       "remote_number":"+12025550177",
+       "messages":[{"speaker":"remote_party",
+       "text":"Your account is locked. Reply with the code we just sent."}]}'`,
+  r:[['200','Evaluated'],['400','Invalid request'],['401','Missing or invalid API key'],['404','Line not found']]},
+ {g:'Actions',id:'actions',m:'POST',p:'/v1/actions/{id}/result',t:'Report an action result',d:'When Simbue needs an action carried out, such as ending a call, it POSTs the instruction to the callback_url you gave when opening the session, with an action id. Once you have carried it out, or tried to, report the outcome here.',
+  b:[['status','string',1,'executed or failed'],['latency','object',0,'Optional timing, for example {"total_ms": 1800}.'],['detail','string',0,'Optional context, useful when status is failed.']],
+  ex:`curl -X POST https://streaming.kosherphone.com/v1/actions/ACTION_ID/result \\
+  -H "x-api-key: sk_live_…" -H "Content-Type: application/json" \\
+  -d '{"status":"executed","latency":{"total_ms":1800}}'`,
+  r:[['200','Recorded'],['404','Action not found']]}
+];
+const esc=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+let lastG='';document.getElementById('apinav').innerHTML=EP.map(e=>{const h=e.g!==lastG?`<b>${e.g}</b>`:'';lastG=e.g;return h+`<a href="#developers" data-to="ep-${e.id}"><span class="mth">${e.m}</span>${e.t}</a>`}).join('');
+document.getElementById('apieps').innerHTML=EP.map(e=>`<article class="ep" id="ep-${e.id}"><div class="eph"><span class="mth">${e.m}</span><code>${e.p}</code></div><h3>${e.t}</h3><p>${e.d}</p><h4>Body parameters</h4><div class="scroll"><table class="ptab"><thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead><tbody>${e.b.map(b=>`<tr><td><code>${b[0]}</code>${b[2]?'<span class="req">required</span>':''}</td><td class="ty">${b[1]}</td><td>${esc(b[3])}</td></tr>`).join('')}</tbody></table></div><h4>Example</h4><div class="code"><button class="copy" data-c="${esc(e.ex)}">Copy</button>${esc(e.ex)}</div><h4>Responses</h4><div class="codes">${e.r.map(r=>`<span class="cd"><b>${r[0]}</b>${r[1]}</span>`).join('')}</div></article>`).join('');
+document.getElementById('toref').addEventListener('click',ev=>{ev.preventDefault();document.getElementById('api-ref').scrollIntoView()});
+document.getElementById('apinav').addEventListener('click',ev=>{const a=ev.target.closest('a');if(!a)return;ev.preventDefault();document.getElementById(a.dataset.to).scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'})});
+/* hero animation */
+const lines=[...document.querySelectorAll('#tx .ln')],rb=document.getElementById('rb'),rv=document.getElementById('rv'),end=document.getElementById('end');
+const steps=[[0,8],[1,34],[2,93]];let tm=[];
+const play=()=>{tm.forEach(clearTimeout);tm=[];lines.forEach(l=>l.classList.remove('on'));end.classList.remove('on');rb.style.width='4%';rb.style.background='';rv.textContent='4%';
+ steps.forEach(([i,r],n)=>tm.push(setTimeout(()=>{lines[i].classList.add('on');rb.style.width=r+'%';rv.textContent=r+'%';if(r>80)rb.style.background='#ff6b6b'},900+n*1600)));
+ tm.push(setTimeout(()=>end.classList.add('on'),900+3*1600));
+ tm.push(setTimeout(play,900+3*1600+4200));};
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+if(reduce){lines.forEach(l=>l.classList.add('on'));rb.style.width='93%';rb.style.background='#ff6b6b';rv.textContent='93%';end.classList.add('on')}
+
+/* routing */
+const views=['home','features','console','developers','pricing'];let started=false;
+const route=()=>{const h=location.hash.slice(1);const v=views.includes(h)?h:'home';
+ views.forEach(x=>document.getElementById('v-'+x).classList.toggle('on',x==v));
+ document.querySelectorAll('nav a.nl[data-v]').forEach(a=>a.toggleAttribute('aria-current',a.dataset.v==v));
+ if(views.includes(h))window.scrollTo(0,0);
+ if(v=='home'&&!reduce&&!started){started=true;play()}};
+addEventListener('hashchange',route);route();
+}
+</script>
+</body>
+</html>
